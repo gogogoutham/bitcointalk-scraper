@@ -1,0 +1,4 @@
+*.pyc
+sql/setup.sql
+data
+.pgpass
