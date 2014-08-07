@@ -1,4 +1,5 @@
 *.pyc
 sql/setup.sql
 data
+log
 .pgpass

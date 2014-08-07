@@ -2,6 +2,7 @@
 import bitcointalk
 import logging
 import memoizer
+import os
 import sys
 import traceback
 

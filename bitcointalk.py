@@ -252,84 +252,84 @@ class BitcointalkTest(unittest.TestCase):
 
     """"Testing suite for bitcointalk module."""
 
-    # def testRequestBoard(self):
-    #     """Method for testing requestBoard."""
-    #     html = requestBoard(74)
-    #     f = codecs.open("{0}/example/board_74.html".format(
-    #         os.path.dirname(os.path.abspath(__file__))), 'w', 'utf-8')
-    #     f.write(html)
-    #     f.close()
-    #     title = lxml.html.fromstring(html).cssselect("title")[0].text
-    #     errorMsg = "Got unexpected output for webpage title: {0}".format(title)
-    #     self.assertEqual(title, "Legal", errorMsg)
+    def testRequestBoard(self):
+        """Method for testing requestBoard."""
+        html = requestBoard(74)
+        f = codecs.open("{0}/data/test_board_74.html".format(
+            os.path.dirname(os.path.abspath(__file__))), 'w', 'utf-8')
+        f.write(html)
+        f.close()
+        title = lxml.html.fromstring(html).cssselect("title")[0].text
+        errorMsg = "Got unexpected output for webpage title: {0}".format(title)
+        self.assertEqual(title, "Legal", errorMsg)
 
-    # def testRequestProfile(self):
-    #     """Method for testing requestProfile."""
-    #     html = requestProfile(12)
-    #     f = codecs.open("{0}/example/profile_12.html".format(
-    #         os.path.dirname(os.path.abspath(__file__))), 'w', 'utf-8')
-    #     f.write(html)
-    #     f.close()
-    #     title = lxml.html.fromstring(html).cssselect("title")[0].text
-    #     errorMsg = "Got unexpected output for webpage title: {0}".format(title)
-    #     self.assertEqual(title, "View the profile of nanaimogold", errorMsg)
+    def testRequestProfile(self):
+        """Method for testing requestProfile."""
+        html = requestProfile(12)
+        f = codecs.open("{0}/data/test_profile_12.html".format(
+            os.path.dirname(os.path.abspath(__file__))), 'w', 'utf-8')
+        f.write(html)
+        f.close()
+        title = lxml.html.fromstring(html).cssselect("title")[0].text
+        errorMsg = "Got unexpected output for webpage title: {0}".format(title)
+        self.assertEqual(title, "View the profile of nanaimogold", errorMsg)
 
-    # def testRequestTopicPage(self):
-    #     """Method for testing requestTopicPage."""
-    #     html = requestTopic(14)
-    #     f = codecs.open("{0}/example/topic_14.html".format(
-    #         os.path.dirname(os.path.abspath(__file__))), 'w', 'utf-8')
-    #     f.write(html)
-    #     f.close()
-    #     title = lxml.html.fromstring(html).cssselect("title")[0].text
-    #     errorMsg = "Got unexpected output for webpage title: {0}".format(title)
-    #     self.assertEqual(title, "Break on the supply's increase", errorMsg)
+    def testRequestTopicPage(self):
+        """Method for testing requestTopicPage."""
+        html = requestTopic(14)
+        f = codecs.open("{0}/data/test_topic_14.html".format(
+            os.path.dirname(os.path.abspath(__file__))), 'w', 'utf-8')
+        f.write(html)
+        f.close()
+        title = lxml.html.fromstring(html).cssselect("title")[0].text
+        errorMsg = "Got unexpected output for webpage title: {0}".format(title)
+        self.assertEqual(title, "Break on the supply's increase", errorMsg)
 
-    #     html = requestTopic(602041, 12400)
-    #     f = codecs.open("{0}/example/topic_602041.12400.html".format(
-    #         os.path.dirname(os.path.abspath(__file__))), 'w', 'utf-8')
-    #     f.write(html)
-    #     f.close()
+        html = requestTopic(602041, 12400)
+        f = codecs.open("{0}/example/topic_602041.12400.html".format(
+            os.path.dirname(os.path.abspath(__file__))), 'w', 'utf-8')
+        f.write(html)
+        f.close()
 
-    # def testParseBoard(self):
-    #     """Method for testing parseBoard."""
-    #     f = codecs.open("{0}/example/board_74.html".format(
-    #         os.path.dirname(os.path.abspath(__file__))), 'r', 'utf-8')
-    #     html = f.read()
-    #     f.close()
-    #     data = parseBoard(html)
-    #     expectedData = {
-    #         'id': 74,
-    #         'name': 'Legal',
-    #         'container': 'Bitcoin',
-    #         'parent': 1
-    #     }
-    #     self.assertEqual(data, expectedData)
+    def testParseBoard(self):
+        """Method for testing parseBoard."""
+        f = codecs.open("{0}/example/board_74.html".format(
+            os.path.dirname(os.path.abspath(__file__))), 'r', 'utf-8')
+        html = f.read()
+        f.close()
+        data = parseBoard(html)
+        expectedData = {
+            'id': 74,
+            'name': 'Legal',
+            'container': 'Bitcoin',
+            'parent': 1
+        }
+        self.assertEqual(data, expectedData)
 
-    # def testParseProfile(self):
-    #     """Method for testing parseProfile."""
-    #     f = codecs.open("{0}/example/profile_12.html".format(
-    #         os.path.dirname(os.path.abspath(__file__))), 'r', 'utf-8')
-    #     html = f.read()
-    #     f.close()
-    #     todaysDate = date(2014, 7, 29)
-    #     data = parseProfile(html, todaysDate)
-    #     expectedData = {
-    #         'id': 12,
-    #         'name': 'nanaimogold',
-    #         'position': 'Sr. Member',
-    #         'date_registered': datetime(2009, 12, 9, 19, 23, 55),
-    #         'last_active': datetime(2014, 7, 29, 0, 38, 1),
-    #         'email': 'hidden',
-    #         'website_name': 'Nanaimo Gold Digital Currency Exchange',
-    #         'website_link': 'https://www.nanaimogold.com/',
-    #         'bitcoin_address': None,
-    #         'other_contact_info': None,
-    #         'signature': '<a href="https://www.nanaimogold.com/" ' +
-    #         'target="_blank">https://www.nanaimogold.com/</a> ' +
-    #         '- World\'s first bitcoin exchange service'
-    #     }
-    #     self.assertEqual(data, expectedData)
+    def testParseProfile(self):
+        """Method for testing parseProfile."""
+        f = codecs.open("{0}/example/profile_12.html".format(
+            os.path.dirname(os.path.abspath(__file__))), 'r', 'utf-8')
+        html = f.read()
+        f.close()
+        todaysDate = date(2014, 7, 29)
+        data = parseProfile(html, todaysDate)
+        expectedData = {
+            'id': 12,
+            'name': 'nanaimogold',
+            'position': 'Sr. Member',
+            'date_registered': datetime(2009, 12, 9, 19, 23, 55),
+            'last_active': datetime(2014, 7, 29, 0, 38, 1),
+            'email': 'hidden',
+            'website_name': 'Nanaimo Gold Digital Currency Exchange',
+            'website_link': 'https://www.nanaimogold.com/',
+            'bitcoin_address': None,
+            'other_contact_info': None,
+            'signature': '<a href="https://www.nanaimogold.com/" ' +
+            'target="_blank">https://www.nanaimogold.com/</a> ' +
+            '- World\'s first bitcoin exchange service'
+        }
+        self.assertEqual(data, expectedData)
 
     def testParseTopicPage(self):
         """Method for testing parseTopicPage."""
