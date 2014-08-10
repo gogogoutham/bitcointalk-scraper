@@ -20,7 +20,9 @@ tables = {
 }
 
 # Pull in postgres configuration information
-dbcFile = open('.pgpass', 'r')
+dbcFile = open(
+    "{0}/.pgpass".format(os.path.dirname(os.path.abspath(__file__))),
+    'r')
 dbcRaw = dbcFile.readline().strip().split(':')
 dbcParams = {
     'database': dbcRaw[2],
@@ -248,7 +250,8 @@ class PgTest(unittest.TestCase):
             os.path.dirname(os.path.abspath(__file__))), 'r', 'utf-8')
         html = f.read()
         f.close()
-        datum = bitcointalk.parseBoard(html)
+        datum = bitcointalk.parseBoardPage(html)
+        del datum["topic_ids"]
         insertBoard(datum)
         # Make sure a second insert doesn't cause problems
         insertBoard(datum)

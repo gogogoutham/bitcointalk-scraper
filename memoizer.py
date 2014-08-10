@@ -14,17 +14,22 @@ memo = {
 }
 
 
+def _insertBoardPage(data):
+    """Insert just the board."""
+    del data['topic_ids']
+    pg.insertBoard(data)
+
+
 def _insertTopicPage(data):
     """Insert data as topic and messages and splice off messages."""
     pg.insertMessages(data.pop('messages'))
     pg.insertTopic(data)
 
-
 entityFunctions = {
     'board': {
-        'requestor': bitcointalk.requestBoard,
-        'parser': bitcointalk.parseBoard,
-        'inserter': pg.insertBoard,
+        'requestor': bitcointalk.requestBoardPage,
+        'parser': bitcointalk.parseBoardPage,
+        'inserter': _insertBoardPage,
         'selector': pg.selectBoard
     },
     'member': {
@@ -83,6 +88,16 @@ def _scrape(entity, entityId):
 def scrapeBoard(boardId):
     """Scrape information on the specified board."""
     return _scrape('board', boardId)
+
+
+def scrapeTopicIds(boardId, pageNum):
+    """Scrape topic IDs from a board page. Will not store values."""
+    offset = (pageNum-1)*40
+    html = bitcointalk.requestBoardPage(boardId, offset)
+    _saveToFile(html, "boardpage", "{0}.{1}".format(boardId, offset))
+    data = bitcointalk.parseBoardPage(html)
+    data = data['topic_ids']
+    return data
 
 
 def scrapeMember(memberId):
@@ -163,7 +178,8 @@ class MemoizerTest(unittest.TestCase):
             'id': 74,
             'name': 'Legal',
             'container': 'Bitcoin',
-            'parent': 1
+            'parent': 1,
+            'num_pages': 23
         }
         self.assertEqual(datumExpected, datumFirst)
         self.assertEqual(datumExpected, datumSecond)

@@ -2,7 +2,7 @@
 import codecs
 from datetime import date
 from datetime import datetime
-from datetime import time
+from datetime import time as tm
 import HTMLParser
 import json
 import logging
@@ -17,7 +17,7 @@ import unittest
 
 baseUrl = "https://bitcointalk.org/index.php"
 countRequested = 0
-interReqTime = 5
+interReqTime = 2
 lastReqTime = None
 
 
@@ -42,9 +42,9 @@ def _request(payloadString):
             Received status code {0}.".format(r.status_code))
 
 
-def requestBoard(boardId):
-    """Method for requesting a profile."""
-    return _request("board={0}".format(boardId))
+def requestBoardPage(boardId, topicOffest=0):
+    """Method for requesting a board."""
+    return _request("board={0}.{1}".format(boardId, topicOffest))
 
 
 def requestProfile(memberId):
@@ -58,8 +58,8 @@ def requestTopicPage(topicId, messageOffset=0):
     return _request("topic={0}.{1}".format(topicId, messageOffset))
 
 
-def parseBoard(html):
-    """Method for parsing board HTML."""
+def parseBoardPage(html):
+    """Method for parsing board HTML. Will extract topic IDs."""
     data = {}
 
     # Extract name
@@ -86,6 +86,34 @@ def parseBoard(html):
             data['parent'] = int(linkSuffix[7:].split(".")[0])
         elif linkText == data['name']:
             data['id'] = int(linkSuffix[7:].split(".")[0])
+
+    # Parse number of pages
+    data['num_pages'] = 0
+    pageNodes = bodyArea.cssselect(
+        "#bodyarea>table td.middletext>a,#bodyarea>table td.middletext>b")
+    for pageNode in pageNodes:
+        if pageNode.text == " ... " or pageNode.text == "All":
+            continue
+        elif int(pageNode.text) > data['num_pages']:
+            data["num_pages"] = int(pageNode.text)
+
+    # Parse the topic IDs
+    topicIds = []
+    topics = docRoot.cssselect(
+        "#bodyarea>div.tborder>table.bordercolor>tr")
+    for topic in topics:
+        # print topic.text_content()
+        topicCells = topic.cssselect("td")
+        if len(topicCells) != 7:
+            continue
+        topicLinks = topicCells[2].cssselect("span>a")
+        if len(topicLinks) > 0:
+            linkPayload = topicLinks[0].attrib['href'].replace(
+                baseUrl, '')[1:]
+            if linkPayload[0:5] == 'topic':
+                topicIds.append(int(linkPayload[6:-2]))
+    data['topic_ids'] = topicIds
+
     return data
 
 
@@ -252,9 +280,9 @@ class BitcointalkTest(unittest.TestCase):
 
     """"Testing suite for bitcointalk module."""
 
-    def testRequestBoard(self):
-        """Method for testing requestBoard."""
-        html = requestBoard(74)
+    def testRequestBoardPage(self):
+        """Method for testing requestBoardPate."""
+        html = requestBoardPage(74)
         f = codecs.open("{0}/data/test_board_74.html".format(
             os.path.dirname(os.path.abspath(__file__))), 'w', 'utf-8')
         f.write(html)
@@ -262,6 +290,12 @@ class BitcointalkTest(unittest.TestCase):
         title = lxml.html.fromstring(html).cssselect("title")[0].text
         errorMsg = "Got unexpected output for webpage title: {0}".format(title)
         self.assertEqual(title, "Legal", errorMsg)
+
+        html = requestBoardPage(5, 600)
+        f = codecs.open("{0}/data/test_board_5.600.html".format(
+            os.path.dirname(os.path.abspath(__file__))), 'w', 'utf-8')
+        f.write(html)
+        f.close()
 
     def testRequestProfile(self):
         """Method for testing requestProfile."""
@@ -276,7 +310,7 @@ class BitcointalkTest(unittest.TestCase):
 
     def testRequestTopicPage(self):
         """Method for testing requestTopicPage."""
-        html = requestTopic(14)
+        html = requestTopicPage(14)
         f = codecs.open("{0}/data/test_topic_14.html".format(
             os.path.dirname(os.path.abspath(__file__))), 'w', 'utf-8')
         f.write(html)
@@ -285,26 +319,49 @@ class BitcointalkTest(unittest.TestCase):
         errorMsg = "Got unexpected output for webpage title: {0}".format(title)
         self.assertEqual(title, "Break on the supply's increase", errorMsg)
 
-        html = requestTopic(602041, 12400)
-        f = codecs.open("{0}/example/topic_602041.12400.html".format(
+        html = requestTopicPage(602041, 12400)
+        f = codecs.open("{0}/data/test_topic_602041.12400.html".format(
             os.path.dirname(os.path.abspath(__file__))), 'w', 'utf-8')
         f.write(html)
         f.close()
 
-    def testParseBoard(self):
-        """Method for testing parseBoard."""
+    def testParseBoardPage(self):
+        """Method for testing parseBoardPage."""
         f = codecs.open("{0}/example/board_74.html".format(
             os.path.dirname(os.path.abspath(__file__))), 'r', 'utf-8')
         html = f.read()
         f.close()
-        data = parseBoard(html)
+        data = parseBoardPage(html)
+        topicIds = data.pop("topic_ids")
         expectedData = {
             'id': 74,
             'name': 'Legal',
             'container': 'Bitcoin',
-            'parent': 1
+            'parent': 1,
+            'num_pages': 23,
         }
         self.assertEqual(data, expectedData)
+        self.assertEqual(len(topicIds), 40)
+        self.assertEqual(topicIds[0], 96118)
+        self.assertEqual(topicIds[-1], 684343)
+
+        f = codecs.open("{0}/example/board_5.600.html".format(
+            os.path.dirname(os.path.abspath(__file__))), 'r', 'utf-8')
+        html = f.read()
+        f.close()
+        data = parseBoardPage(html)
+        topicIds = data.pop("topic_ids")
+        expectedData = {
+            'id': 5,
+            'name': 'Marketplace',
+            'container': 'Economy',
+            'parent': None,
+            'num_pages': 128,
+        }
+        self.assertEqual(data, expectedData)
+        self.assertEqual(len(topicIds), 40)
+        self.assertEqual(topicIds[0], 423880)
+        self.assertEqual(topicIds[-1], 430401)
 
     def testParseProfile(self):
         """Method for testing parseProfile."""
@@ -387,7 +444,7 @@ class BitcointalkTest(unittest.TestCase):
         self.assertEqual(data['num_pages'], 621)
         self.assertEqual(
             data['messages'][0]['post_time'],
-            datetime.combine(datetime.utcnow().date(), time(21, 3, 11)))
+            datetime.combine(datetime.utcnow().date(), tm(21, 3, 11)))
         # print "Content of Message 1"
         # print data['messages'][0]['content']
         # print "Content of Message 1, No HTML"

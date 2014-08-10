@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS board (
     name VARCHAR(255),
     parent INTEGER,
     container VARCHAR(255),
+    num_pages INTEGER,
     db_update_time TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp,
     PRIMARY KEY(sid)
 );
